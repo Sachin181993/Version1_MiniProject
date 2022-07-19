@@ -31,6 +31,7 @@ import java.util.ArrayList;
 import java.awt.event.ActionEvent;
 import javax.swing.JPasswordField;
 import javax.swing.JScrollBar;
+import javax.swing.JScrollPane;
 
 import java.awt.Color;
 import java.awt.Component;
@@ -254,8 +255,9 @@ public class Login {
 		
 		
 		//event not firing
-		ArrayList <String> pnamesList= new ArrayList<String>();
-		JList<String> products = new JList<>();
+		//ArrayList <String> pnamesList= new ArrayList<String>();
+		ArrayList <Product> productsList= new ArrayList<Product>();
+		//JList<String> products = new JList<>();
 
 		try {
 			Class.forName("com.mysql.cj.jdbc.Driver");
@@ -263,7 +265,7 @@ public class Login {
 			System.out.println("userid2 " + userId);
 			//String sql = "select p.product_name from products p JOIN orders o ON o.product_id = p.product_id \r\n"
 			//		+ "Join users u ON o.user_id = u.user_id where u.user_id = ? Order by p.product_name;";
-			String sql = "select p.product_name from products p JOIN orders o ON o.product_id = p.product_id Join users u ON o.user_id = u.user_id "
+			String sql = "select p.product_name,p.product_desc,p.product_value from products p JOIN orders o ON o.product_id = p.product_id Join users u ON o.user_id = u.user_id "
 					+ "WHERE u.user_id=\"" + userId + "\" ";
 			Statement stmt = conn.createStatement();
 			
@@ -272,31 +274,46 @@ public class Login {
 			
 			
 			while(rs.next()) {
-				pnamesList.add(rs.getString(1));
+				Product p = new Product();
+				p.setProductName(rs.getString(1));
+				p.setProdDesc(rs.getString(2));
+				p.setProdValue(rs.getInt(3));
+				
+				productsList.add(p);
+				//pnamesList.add(rs.getString(1));
+				
 			}
 			
-			String[] productsArray = new String[pnamesList.size()]; 
-			productsArray = pnamesList.toArray(productsArray);
-			products = new JList<>(productsArray);
+			/*
+			 * String[] productsArray = new String[pnamesList.size()]; productsArray =
+			 * pnamesList.toArray(productsArray); products = new JList<>(productsArray);
+			 */
+			
+			
 			
 			conn.close();
 		} catch (Exception e1) {
 			System.out.println(e1);
 		}
 		
+		//Productmodel
+		ProductTableModel model = new ProductTableModel(productsList);
+		JTable table = new JTable(model);
+		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		frame.add(new JScrollPane(table));
+		frame.add(panel_orders);
+		frame.pack();
+		frame.setVisible(true);
 		
-		products.addListSelectionListener(new ListSelectionListener() {
-			public void valueChanged(ListSelectionEvent e) {
-			}
-		});
+		/*
+		 * products.addListSelectionListener(new ListSelectionListener() { public void
+		 * valueChanged(ListSelectionEvent e) { } });
+		 */
 		
 		/*
 		 * products.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		 * panel_orders.add(products);
 		 */
-		frame.add(panel_orders);
-		frame.pack();
-		frame.setVisible(true);
 		GridBagConstraints gbc_list = new GridBagConstraints();
 		gbc_list.gridheight = 3;
 		gbc_list.gridwidth = 5;
@@ -304,7 +321,7 @@ public class Login {
 		gbc_list.fill = GridBagConstraints.BOTH;
 		gbc_list.gridx = 7;
 		gbc_list.gridy = 1;
-		frame.getContentPane().add(products, gbc_list);
+		//frame.getContentPane().add(products, gbc_list);
 
 		Component horizontalStrut = Box.createHorizontalStrut(20);
 		GridBagConstraints gbc_horizontalStrut = new GridBagConstraints();
